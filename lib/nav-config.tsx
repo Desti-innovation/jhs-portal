@@ -9,10 +9,11 @@ import {
   Settings2Icon,
   FlaskConicalIcon,
   GraduationCapIcon,
+  TableIcon,
 } from "lucide-react"
 import * as React from "react"
 
-export type Role = "hod" | "teacher" | "parent" | "admin"
+export type Role = "hod" | "teacher" | "parent" | "admin" | "headmaster"
 
 export type NavItem = {
   title: string
@@ -25,7 +26,8 @@ export const NAV_BY_ROLE: Record<Role, NavItem[]> = {
     { title: "Dashboard",       url: "/dashboard",                 icon: <LayoutDashboardIcon /> },
     { title: "Mocks",           url: "/dashboard/mocks",           icon: <FileTextIcon /> },
     { title: "Enter Scores",    url: "/dashboard/scores",          icon: <ClipboardEditIcon /> },
-    { title: "Results (All)",   url: "/dashboard/results",         icon: <ChartBarIcon /> },
+    { title: "Master Results",  url: "/dashboard/admin-results",   icon: <TableIcon /> },
+    { title: "Results (Slips)", url: "/dashboard/results",         icon: <ChartBarIcon /> },
     { title: "Students",        url: "/dashboard/students",        icon: <GraduationCapIcon /> },
     { title: "Users",           url: "/dashboard/users",           icon: <UsersIcon /> },
     { title: "Subjects",        url: "/dashboard/subjects",        icon: <BookOpenIcon /> },
@@ -44,14 +46,23 @@ export const NAV_BY_ROLE: Record<Role, NavItem[]> = {
     { title: "Settings",           url: "/dashboard/settings", icon: <Settings2Icon /> },
   ],
   admin: [
-    { title: "Dashboard",    url: "/dashboard",           icon: <LayoutDashboardIcon /> },
-    { title: "Enter Scores", url: "/dashboard/scores",    icon: <ClipboardEditIcon /> },
-    { title: "All Results",  url: "/dashboard/results",   icon: <ChartBarIcon /> },
-    { title: "Students",     url: "/dashboard/students",  icon: <GraduationCapIcon /> },
-    { title: "Mocks",        url: "/dashboard/mocks",     icon: <FileTextIcon /> },
-    { title: "Users",        url: "/dashboard/users",     icon: <UsersIcon /> },
-    { title: "Analytics",    url: "/dashboard/analytics", icon: <ChartBarIcon /> },
-    { title: "Settings",     url: "/dashboard/settings",  icon: <Settings2Icon /> },
+    { title: "Dashboard",       url: "/dashboard",                 icon: <LayoutDashboardIcon /> },
+    { title: "Master Results",  url: "/dashboard/admin-results",   icon: <TableIcon /> },
+    { title: "Students",        url: "/dashboard/students",        icon: <GraduationCapIcon /> },
+    { title: "Mocks",           url: "/dashboard/mocks",           icon: <FileTextIcon /> },
+    { title: "Enter Scores",    url: "/dashboard/scores",          icon: <ClipboardEditIcon /> },
+    { title: "Results (Slips)", url: "/dashboard/results",         icon: <ChartBarIcon /> },
+    { title: "Users",           url: "/dashboard/users",           icon: <UsersIcon /> },
+    { title: "Subjects",        url: "/dashboard/subjects",        icon: <BookOpenIcon /> },
+    { title: "Analytics",       url: "/dashboard/analytics",       icon: <ChartBarIcon /> },
+    { title: "Settings",        url: "/dashboard/settings",        icon: <Settings2Icon /> },
+  ],
+  headmaster: [
+    { title: "Dashboard",       url: "/dashboard",               icon: <LayoutDashboardIcon /> },
+    { title: "Master Results",  url: "/dashboard/admin-results", icon: <TableIcon /> },
+    { title: "Results (Slips)", url: "/dashboard/results",       icon: <ChartBarIcon /> },
+    { title: "Analytics",       url: "/dashboard/analytics",     icon: <ChartBarIcon /> },
+    { title: "Settings",        url: "/dashboard/settings",      icon: <Settings2Icon /> },
   ],
 }
 
@@ -60,4 +71,5 @@ export const ROLE_LABEL: Record<Role, string> = {
   teacher: "Teacher",
   parent: "Parent",
   admin: "Admin",
+  headmaster: "Headmaster",
 }

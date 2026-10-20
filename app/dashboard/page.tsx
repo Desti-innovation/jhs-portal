@@ -12,7 +12,8 @@ import { TeacherSubjectCharts } from "./teacher-charts"
 export const instant = false
 
 export default async function DashboardPage() {
-  const user = await requireRole("hod", "admin", "teacher", "parent")
+  // const user = await requireRole("hod", "admin", "teacher", "parent")
+  const user = await requireRole("hod", "admin", "teacher", "parent", "headmaster")
   
   // -----------------------------------------------------
   // 1. TEACHER DASHBOARD

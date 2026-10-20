@@ -1,10 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server"
-// import { verifySession } from "@/lib/auth"
 import { verifySession } from "@/lib/auth-edge"
 
 const PUBLIC_PATHS = ["/login"]
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
 
   if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {

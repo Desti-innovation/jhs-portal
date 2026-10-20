@@ -1,9 +1,11 @@
 import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
 import { SignJWT, jwtVerify } from "jose"
 import bcrypt from "bcryptjs"
 import { sql } from "@/lib/db"
 
-export type Role = "hod" | "teacher" | "parent" | "admin"
+// lib/auth.ts
+export type Role = "hod" | "teacher" | "parent" | "admin" | "headmaster"
 
 export type SessionUser = {
   id: string
@@ -94,10 +96,17 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
 // ---------- Require role ----------
 export async function requireRole(...roles: Role[]): Promise<SessionUser> {
   const user = await getCurrentUser()
-  if (!user) throw new Error("UNAUTHENTICATED")
-  if (roles.length && !roles.includes(user.role)) {
-    throw new Error("FORBIDDEN")
+
+  // No session → go to login
+  if (!user) {
+    redirect("/login")
   }
+
+  // Wrong role → go to dashboard (never throws a red error page)
+  if (roles.length && !roles.includes(user.role)) {
+    redirect("/dashboard")
+  }
+
   return user
 }
 

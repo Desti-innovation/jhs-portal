@@ -13,12 +13,11 @@ export default async function ResultsPage({
 }: {
   searchParams: Promise<{ mock?: string; student?: string }>
 }) {
-  // Allow HOD, Admin, and Parent
-  const user = await requireRole("hod", "admin", "parent") 
+  // Allow HOD, Admin, Headmaster, and Parent
+  const user = await requireRole("hod", "admin", "parent", "headmaster")
   const { mock: mockId, student: studentId } = await searchParams
 
   const allMocks = await listMocks()
-  // Only show published mocks for results
   const publishedMocks = allMocks.filter((m) => m.status === "published")
   const selectedMock = mockId
     ? publishedMocks.find((m) => m.id === mockId) ?? null
@@ -56,7 +55,7 @@ export default async function ResultsPage({
   }
 
   // -----------------------------------------
-  // HOD / ADMIN VIEW
+  // HOD / ADMIN / HEADMASTER VIEW
   // -----------------------------------------
   const students = await listStudents()
   const activeStudentId = studentId || students[0]?.id

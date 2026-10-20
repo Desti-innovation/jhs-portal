@@ -41,16 +41,18 @@ export async function listStudents(): Promise<StudentRow[]> {
  * Subjects a user can enter scores for.
  * HOD / admin → all subjects.
  * Teacher → only their teacher_assignments.
+ * Parent / headmaster → none.
  */
 export async function listSubjectsForUser(
   userId: string,
-  role: "hod" | "admin" | "teacher" | "parent"
+  role: "hod" | "admin" | "teacher" | "parent" | "headmaster"
 ): Promise<SubjectRow[]> {
   if (role === "hod" || role === "admin") {
     return (await sql`
       SELECT id, code, name FROM subjects ORDER BY name
     `) as SubjectRow[]
   }
+  
   if (role === "teacher") {
     return (await sql`
       SELECT s.id, s.code, s.name
@@ -60,6 +62,8 @@ export async function listSubjectsForUser(
       ORDER BY s.name
     `) as SubjectRow[]
   }
+  
+  // Parent and headmaster get no subjects (read-only roles)
   return []
 }
 
