@@ -9,11 +9,13 @@ export async function createMockAction(
   prevState: { error?: string } | null,
   formData: FormData
 ): Promise<{ error?: string }> {
-  const user = await requireRole("hod")
+  // Allow both HOD and Admin to create mocks
+  const user = await requireRole("hod", "admin")
 
   const name = String(formData.get("name") ?? "").trim()
   const term = String(formData.get("term") ?? "").trim()
   const academic_year = String(formData.get("academic_year") ?? "").trim()
+  
   const opens_at = (formData.get("opens_at") as string) || null
   const closes_at = (formData.get("closes_at") as string) || null
 
@@ -31,13 +33,11 @@ export async function createMockAction(
   })
 
   revalidatePath("/dashboard/mocks")
-  
-  // 👇 Corrected path
   redirect(`/dashboard/mocks/${mock.id}`)
 }
 
 export async function transitionMockAction(id: string, action: string) {
-  const user = await requireRole("hod")
+  const user = await requireRole("hod", "admin")
 
   if (!["activate", "lock", "publish", "reopen"].includes(action)) {
     throw new Error("Invalid action")

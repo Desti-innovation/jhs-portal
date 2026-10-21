@@ -6,6 +6,8 @@ import { getMock } from "@/lib/mocks"
 import { MockStatusBadge } from "@/components/mock-status-badge"
 import { transitionMockAction } from "../actions"
 
+export const instant = false
+
 export default async function MockDetailPage({
   params,
 }: {
