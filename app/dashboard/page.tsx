@@ -5,14 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MockStatusBadge } from "@/components/mock-status-badge"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { EyeIcon, DownloadIcon, UsersIcon, GraduationCapIcon, BookOpenIcon, ClipboardEditIcon } from "lucide-react"
+import { EyeIcon, DownloadIcon, UsersIcon, GraduationCapIcon, BookOpenIcon, ClipboardEditIcon, Heart } from "lucide-react"
 import { DashboardCharts } from "./dashboard-charts"
 import { TeacherSubjectCharts } from "./teacher-charts"
 
 export const instant = false
 
 export default async function DashboardPage() {
-  // const user = await requireRole("hod", "admin", "teacher", "parent")
   const user = await requireRole("hod", "admin", "teacher", "parent", "headmaster")
   
   // -----------------------------------------------------
@@ -190,8 +189,8 @@ export default async function DashboardPage() {
                   <p className="text-sm text-muted-foreground">{latestMock.term} · {latestMock.academic_year}</p>
                 </CardHeader>
                 <CardContent>
-                  <Button className="w-full sm:w-auto" nativeButton={false} render={<Link href={`/dashboard/results?mock=${latestMock.id}`} />}>
-                    View Result
+                  <Button className="w-full sm:w-auto" nativeButton={false} render={<Link href={`/dashboard/download?mock=${latestMock.id}`} />}>
+                    View & Download
                   </Button>
                 </CardContent>
               </Card>
@@ -208,8 +207,8 @@ export default async function DashboardPage() {
                         <h3 className="font-semibold">{m.name}</h3>
                         <p className="text-sm text-muted-foreground">{m.term} · {m.academic_year}</p>
                       </div>
-                      <Button variant="outline" size="sm" className="w-full mt-2" nativeButton={false} render={<Link href={`/dashboard/results?mock=${m.id}`} />}>
-                        View Result
+                      <Button variant="outline" size="sm" className="w-full mt-2" nativeButton={false} render={<Link href={`/dashboard/download?mock=${m.id}`} />}>
+                        View & Download
                       </Button>
                     </div>
                   ))}
@@ -225,7 +224,7 @@ export default async function DashboardPage() {
   // -----------------------------------------------------
   // 3. HOD / ADMIN DASHBOARD
   // -----------------------------------------------------
-  const [mocks, statsResult, viewsResult, visitsResult] = await Promise.all([
+  const [mocks, statsResult, viewsResult, visitsResult, donationResult] = await Promise.all([
     listMocks(),
     sql`
       SELECT
@@ -238,7 +237,8 @@ export default async function DashboardPage() {
       FROM result_logs 
       GROUP BY action
     `,
-    sql`SELECT COUNT(*) as count FROM page_visits`
+    sql`SELECT COUNT(*) as count FROM page_visits`,
+    sql`SELECT SUM(amount_paid) as total FROM download_payments WHERE status = 'success'`
   ])
 
   const stats = statsResult[0] as { students: string; teachers: string; parents: string }
@@ -251,6 +251,7 @@ export default async function DashboardPage() {
   }
 
   const totalVisits = Number(visitsResult[0].count)
+  const totalDonations = Number(donationResult[0]?.total || 0).toFixed(2)
   const recentMocks = mocks.slice(0, 4)
 
   const pieData = [
@@ -306,6 +307,18 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalVisits}</div>
+          </CardContent>
+        </Card>
+        
+        {/* NEW DONATION CARD */}
+        <Card className="md:col-span-2 lg:col-span-4 bg-emerald-500/5 border-emerald-500/20">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Total Donations Collected</CardTitle>
+            <Heart className="h-4 w-4 text-emerald-600 dark:text-emerald-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">GHS {totalDonations}</div>
+            <p className="text-xs text-muted-foreground mt-1">Thank you to all parents who supported the portal.</p>
           </CardContent>
         </Card>
       </div>

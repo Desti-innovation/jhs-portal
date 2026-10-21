@@ -10,6 +10,7 @@ import {
   FlaskConicalIcon,
   GraduationCapIcon,
   TableIcon,
+  LinkIcon,
 } from "lucide-react"
 import * as React from "react"
 
@@ -32,6 +33,7 @@ export const NAV_BY_ROLE: Record<Role, NavItem[]> = {
     { title: "Users",           url: "/dashboard/users",           icon: <UsersIcon /> },
     { title: "Subjects",        url: "/dashboard/subjects",        icon: <BookOpenIcon /> },
     { title: "Grading Preview", url: "/dashboard/grading-preview", icon: <FlaskConicalIcon /> },
+    { title: "Staff Invites", url: "/dashboard/users/invites", icon: <LinkIcon /> },
     { title: "Settings",        url: "/dashboard/settings",        icon: <Settings2Icon /> },
   ],
   teacher: [

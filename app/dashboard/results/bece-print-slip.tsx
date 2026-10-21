@@ -1,6 +1,7 @@
 "use client"
 
-import { PrinterIcon } from "lucide-react"
+import { useState } from "react"
+import { DownloadIcon, Loader2Icon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { Mock } from "@/lib/mocks"
 
@@ -11,22 +12,68 @@ export function BECEPrintSlip({
   mock: Mock; 
   data: NonNullable<Awaited<ReturnType<typeof import("@/lib/results").getStudentResult>>> 
 }) {
-  const handlePrint = () => {
-    window.print()
-  }
+  const [downloading, setDownloading] = useState(false)
 
   const bestSixCodes = data.aggregate.bestSix.map((b) => b.subject_code)
   const bestSixScores = data.scores.filter((s) => bestSixCodes.includes(s.code))
   const totalBestSixScore = bestSixScores.reduce((acc, curr) => acc + Number(curr.score || 0), 0)
 
-  // Generate initials as a fallback
   const initials = `${data.student.first_name[0]}${data.student.last_name[0]}`.toUpperCase()
+
+  const handleDownloadPDF = async () => {
+  setDownloading(true)
+  try {
+    const html2canvas = (await import("html2canvas-pro")).default
+    const { jsPDF } = await import("jspdf")
+
+    const element = document.getElementById("printable-slip")
+    if (!element) return
+
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+    })
+
+    const imgData = canvas.toDataURL("image/png")
+    const pdf = new jsPDF("p", "mm", "a4")
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    const pageHeight = pdf.internal.pageSize.getHeight()
+    const imgHeight = (canvas.height * pageWidth) / canvas.width
+
+    // Add the image, adding extra pages if the slip is taller than A4
+    let heightLeft = imgHeight
+    let position = 0
+    pdf.addImage(imgData, "PNG", 0, position, pageWidth, imgHeight)
+    heightLeft -= pageHeight
+
+    while (heightLeft > 0) {
+      position -= pageHeight
+      pdf.addPage()
+      pdf.addImage(imgData, "PNG", 0, position, pageWidth, imgHeight)
+      heightLeft -= pageHeight
+    }
+
+    pdf.save(`${data.student.last_name}_${mock.name.replace(/\s+/g, "_")}_Result.pdf`)
+  } catch (error) {
+    console.error("Failed to download PDF", error)
+    alert("There was an error downloading the PDF. Please try again.")
+  } finally {
+    setDownloading(false)
+  }
+}
 
   return (
     <div className="max-w-3xl mx-auto space-y-4 print:max-w-none print:m-0 print:p-0">
+      
       <div className="flex justify-end print:hidden">
-        <Button onClick={handlePrint} variant="outline">
-          <PrinterIcon className="mr-2 h-4 w-4" /> Print / Save PDF
+        <Button onClick={handleDownloadPDF} disabled={downloading} variant="default">
+          {downloading ? (
+            <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <DownloadIcon className="mr-2 h-4 w-4" />
+          )}
+          {downloading ? "Downloading..." : "Download PDF"}
         </Button>
       </div>
 
@@ -68,7 +115,7 @@ export function BECEPrintSlip({
               <div>{mock.name} ({mock.term}, {mock.academic_year})</div>
             </div>
 
-            {/* Photo (Displays Image if available, otherwise Initials) */}
+            {/* Photo */}
             <div className="ml-6 shrink-0 flex flex-col items-center">
               {data.student.image_url ? (
                 <img 
@@ -81,7 +128,6 @@ export function BECEPrintSlip({
                   {initials}
                 </div>
               )}
-              <span className="text-[10px] uppercase text-gray-500 mt-1"></span>
             </div>
 
           </div>

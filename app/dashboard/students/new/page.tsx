@@ -33,34 +33,34 @@ export default function NewStudentPage() {
             <CardTitle>Personal Details</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="first_name">First Name *</Label>
               <Input id="first_name" name="first_name" required />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="last_name">Last Name *</Label>
               <Input id="last_name" name="last_name" required />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="middle_name">Middle Name</Label>
               <Input id="middle_name" name="middle_name" />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="other_name">Other Name</Label>
               <Input id="other_name" name="other_name" />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="date_of_birth">Date of Birth</Label>
               <Input id="date_of_birth" name="date_of_birth" type="date" />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="gender">Gender</Label>
               <select 
                 id="gender" 
                 name="gender" 
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
               >
-                <option value="">Select...</option>
+                <option value="" disabled>Select...</option>
                 <option value="male">Male</option>
                 <option value="female">Female</option>
               </select>
@@ -77,19 +77,19 @@ export default function NewStudentPage() {
             </p>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="father_name">Father's Name</Label>
               <Input id="father_name" name="father_name" />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="father_phone">Father's Phone</Label>
               <Input id="father_phone" name="father_phone" type="tel" />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="mother_name">Mother's Name</Label>
               <Input id="mother_name" name="mother_name" />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="mother_phone">Mother's Phone</Label>
               <Input id="mother_phone" name="mother_phone" type="tel" />
             </div>
@@ -101,7 +101,7 @@ export default function NewStudentPage() {
           <CardHeader>
             <CardTitle>Student Photo</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-2">
             <Label htmlFor="image">Passport Picture (JPG/PNG)</Label>
             <Input id="image" name="image" type="file" accept="image/png, image/jpeg" />
           </CardContent>
