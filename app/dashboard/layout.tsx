@@ -5,6 +5,7 @@ import { ModeToggle } from "@/components/mode-toggel"
 import { NavUser } from "@/components/nav-user"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { getCurrentUser } from "@/lib/auth"
+import { SessionTimeout } from "@/components/session-timeout" // 👈 Added
 
 export const instant = false
 
@@ -18,6 +19,7 @@ export default async function DashboardLayout({
 
   return (
     <SidebarProvider>
+      <SessionTimeout /> {/* 👈 Added */}
       <AppSidebar user={user} />
       <SidebarInset>
         <header className="flex h-14 items-center justify-end gap-2 border-b px-4">

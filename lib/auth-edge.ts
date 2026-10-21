@@ -7,6 +7,7 @@ export type SessionUser = {
   email: string
   role: Role
   avatar_url?: string | null
+  lastActivity?: number // 👈 Added this
 }
 
 const JWT_ALG = "HS256"
@@ -21,6 +22,7 @@ export async function verifySession(token: string): Promise<SessionUser | null> 
       email: String(payload.email),
       role: payload.role as Role,
       avatar_url: (payload.avatar_url as string | null) ?? null,
+      lastActivity: Number(payload.lastActivity) || 0, // 👈 Added this
     }
   } catch {
     return null

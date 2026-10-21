@@ -5,4 +5,5 @@ export type SessionUser = {
   email: string
   role: Role
   avatar_url?: string | null
+  lastActivity?: number 
 }

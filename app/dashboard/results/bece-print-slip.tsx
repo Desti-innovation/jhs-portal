@@ -1,71 +1,85 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { DownloadIcon, Loader2Icon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { Mock } from "@/lib/mocks"
 
-export function BECEPrintSlip({ 
-  mock, 
-  data 
-}: { 
-  mock: Mock; 
-  data: NonNullable<Awaited<ReturnType<typeof import("@/lib/results").getStudentResult>>> 
+export function BECEPrintSlip({
+  mock,
+  data,
+}: {
+  mock: Mock
+  data: NonNullable<Awaited<ReturnType<typeof import("@/lib/results").getStudentResult>>>
 }) {
   const [downloading, setDownloading] = useState(false)
+  const [generatedAt, setGeneratedAt] = useState("")
 
-  const bestSixCodes = data.aggregate.bestSix.map((b) => b.subject_code)
-  const bestSixScores = data.scores.filter((s) => bestSixCodes.includes(s.code))
-  const totalBestSixScore = bestSixScores.reduce((acc, curr) => acc + Number(curr.score || 0), 0)
+  useEffect(() => {
+    const d = new Date()
+    const p = (n: number) => String(n).padStart(2, "0")
+    const h = d.getHours()
+    const h12 = h % 12 === 0 ? 12 : h % 12
+    setGeneratedAt(
+      `${p(d.getDate())}-${p(d.getMonth() + 1)}-${d.getFullYear()} ${p(h12)}:${p(d.getMinutes())}:${p(d.getSeconds())}${h >= 12 ? "pm" : "am"}`
+    )
+  }, [])
+
+  const summary = computeSummary(data.scores)
 
   const initials = `${data.student.first_name[0]}${data.student.last_name[0]}`.toUpperCase()
 
   const handleDownloadPDF = async () => {
-  setDownloading(true)
-  try {
-    const html2canvas = (await import("html2canvas-pro")).default
-    const { jsPDF } = await import("jspdf")
+    setDownloading(true)
+    try {
+      const html2canvas = (await import("html2canvas-pro")).default
+      const { jsPDF } = await import("jspdf")
 
-    const element = document.getElementById("printable-slip")
-    if (!element) return
+      const element = document.getElementById("printable-slip")
+      if (!element) return
 
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: "#ffffff",
-    })
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+      })
 
-    const imgData = canvas.toDataURL("image/png")
-    const pdf = new jsPDF("p", "mm", "a4")
-    const pageWidth = pdf.internal.pageSize.getWidth()
-    const pageHeight = pdf.internal.pageSize.getHeight()
-    const imgHeight = (canvas.height * pageWidth) / canvas.width
+      const imgData = canvas.toDataURL("image/png")
+      const pdf = new jsPDF("p", "mm", "a4")
+      const pageWidth = pdf.internal.pageSize.getWidth()
+      const pageHeight = pdf.internal.pageSize.getHeight()
+      const imgHeight = (canvas.height * pageWidth) / canvas.width
 
-    // Add the image, adding extra pages if the slip is taller than A4
-    let heightLeft = imgHeight
-    let position = 0
-    pdf.addImage(imgData, "PNG", 0, position, pageWidth, imgHeight)
-    heightLeft -= pageHeight
-
-    while (heightLeft > 0) {
-      position -= pageHeight
-      pdf.addPage()
+      let heightLeft = imgHeight
+      let position = 0
       pdf.addImage(imgData, "PNG", 0, position, pageWidth, imgHeight)
       heightLeft -= pageHeight
-    }
 
-    pdf.save(`${data.student.last_name}_${mock.name.replace(/\s+/g, "_")}_Result.pdf`)
-  } catch (error) {
-    console.error("Failed to download PDF", error)
-    alert("There was an error downloading the PDF. Please try again.")
-  } finally {
-    setDownloading(false)
+      while (heightLeft > 0) {
+        position -= pageHeight
+        pdf.addPage()
+        pdf.addImage(imgData, "PNG", 0, position, pageWidth, imgHeight)
+        heightLeft -= pageHeight
+      }
+
+      pdf.save(`${data.student.last_name}_${mock.name.replace(/\s+/g, "_")}_Result.pdf`)
+    } catch (error) {
+      console.error("Failed to download PDF", error)
+      alert("There was an error downloading the PDF. Please try again.")
+    } finally {
+      setDownloading(false)
+    }
   }
-}
+
+  const details: [string, string][] = [
+    ["Index Number", data.student.index_number],
+    ["Candidate Name", `${data.student.last_name} ${data.student.first_name}`.toUpperCase()],
+    ["Type of Examination", `BECE Mock (${mock.term}, ${mock.academic_year})`],
+    ["School / Centre", "KENLORD EDUCATIONAL INSTITUTE"],
+  ]
 
   return (
     <div className="max-w-3xl mx-auto space-y-4 print:max-w-none print:m-0 print:p-0">
-      
       <div className="flex justify-end print:hidden">
         <Button onClick={handleDownloadPDF} disabled={downloading} variant="default">
           {downloading ? (
@@ -78,108 +92,108 @@ export function BECEPrintSlip({
       </div>
 
       {/* Printable Slip */}
-      <div id="printable-slip" className="bg-white text-black p-8 shadow-md border rounded-sm print:shadow-none print:border-none print:p-0 relative overflow-hidden min-h-[600px]">
-        
-        {/* Watermark */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none z-0">
-          <div className="text-[120px] font-black rotate-[-30deg] uppercase tracking-widest text-gray-200">
-            DESTORA
-          </div>
+      <div
+        id="printable-slip"
+        className="relative overflow-hidden bg-white text-[#212121] shadow-md border print:shadow-none print:border-none min-h-[1000px] px-10 pt-10 pb-6 flex flex-col"
+      >
+        {/* LOGO WATERMARK */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+          <img
+            src="/kenlord.png"
+            alt=""
+            className="w-[480px] h-[480px] object-contain opacity-[0.1]"
+          />
         </div>
 
-        <div className="relative z-10">
-          {/* Header */}
-          <div className="text-center border-b border-black pb-4 mb-6">
-            <h1 className="text-xl font-bold tracking-widest uppercase">Kenlord Educational Institute Examinations Council</h1>
-            <h2 className="text-lg font-semibold mt-1">Provisional Results Slip</h2>
+        <div className="relative z-10 flex flex-col flex-1">
+          {/* Banner */}
+          <div
+            className="flex items-center gap-4 px-5 py-3 border-b-4"
+            style={{
+              background: "linear-gradient(90deg,#fff176 0%,#fff9c4 60%,#ffffff 100%)",
+              borderBottomColor: "#c62828",
+            }}
+          >
+            <img src="/kenlord.png" alt="Kenlord Logo" className="h-16 w-auto object-contain" />
+            <h1 className="text-2xl font-extrabold tracking-wide uppercase text-[#0d1b3e]">
+              Kenlord Educational Institute
+            </h1>
           </div>
 
-          {/* Candidate Details & Photo */}
-          <div className="flex justify-between items-start mb-8">
-            
-            {/* Details */}
-            <div className="grid grid-cols-[140px_1fr] gap-2 text-sm font-medium flex-1">
-              <div className="text-gray-500 uppercase">Index Number:</div>
-              <div>{data.student.index_number}</div>
-              
-              <div className="text-gray-500 uppercase">Candidate Name:</div>
-              <div className="font-bold uppercase">{data.student.first_name} {data.student.last_name}</div>
-              
-              <div className="text-gray-500 uppercase">Type of Exam:</div>
-              <div>BECE Mock</div>
-              
-              <div className="text-gray-500 uppercase">School:</div>
-              <div>Kenlord Educational Institute</div>
-              
-              <div className="text-gray-500 uppercase">Mock Name:</div>
-              <div>{mock.name} ({mock.term}, {mock.academic_year})</div>
-            </div>
+          {/* Title */}
+          <h2 className="text-center text-lg font-medium mt-6 mb-6">Provisional Mocks Slip</h2>
+
+          <div className="px-4">
+            {/* Disclaimer */}
+            <h3 className="text-md text-red-600 underline mb-4">DISCLAIMER</h3>
+             <p className="text-md text-red-600 leading-snug mb-3">
+                THE RESULTS BELOW ARE THE FINAL RESULTS FOR THE {mock.name.toUpperCase()}
+              </p>
+
+            <h3 className="text-sm font-bold mb-3">Candidate Results</h3>
 
             {/* Photo */}
-            <div className="ml-6 shrink-0 flex flex-col items-center">
+            <div className="flex justify-end mb-6 pr-6">
               {data.student.image_url ? (
-                <img 
-                  src={data.student.image_url} 
-                  alt="Student" 
-                  className="w-[100px] h-[120px] object-cover border-2 border-black" 
+                <img
+                  src={data.student.image_url}
+                  alt="Student"
+                  className="w-[110px] h-[138px] object-cover"
                 />
               ) : (
-                <div className="w-[100px] h-[120px] border-2 border-black flex items-center justify-center bg-gray-100 text-gray-400 text-3xl font-bold">
+                <div className="w-[110px] h-[138px] flex items-center justify-center bg-gray-100 text-gray-400 text-3xl font-bold">
                   {initials}
                 </div>
               )}
             </div>
 
-          </div>
-
-          {/* Results Table */}
-          <div>
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b-2 border-black font-bold text-xs uppercase">
-                  <th className="text-left py-2">Subject</th>
-                  <th className="text-center py-2 w-[60px]">Score</th>
-                  <th className="text-center py-2 w-[60px]">Grade</th>
-                  <th className="text-right py-2 w-[130px]">Remark</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {data.scores.map((s) => (
-                  <tr key={s.code}>
-                    <td className="py-2 uppercase">{s.name}</td>
-                    <td className="py-2 text-center font-bold">
-                      {s.score == null ? "-" : Number(s.score)}
-                    </td>
-                    <td className="py-2 text-center font-bold">
-                      {s.score == null ? "-" : s.grade}
-                    </td>
-                    <td className="py-2 text-right uppercase text-[11px] text-gray-700 font-medium tracking-wide">
-                      {s.score == null ? "MISSING" : getRemark(s.grade)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Aggregate Summary */}
-          <div className="mt-12 pt-6 border-t-2 border-dotted border-gray-400 flex justify-between items-end">
-            <div>
-              <p className="text-sm font-bold uppercase text-gray-500">Best 6 Total Score</p>
-              <p className="text-3xl font-bold">
-                {totalBestSixScore} <span className="text-lg font-normal text-gray-400">/ 600</span>
-              </p>
+            {/* Candidate details */}
+            <div className="grid grid-cols-[1fr_1fr] gap-y-3 text-sm mb-6">
+              {details.map(([label, value]) => (
+                <div key={label} className="contents">
+                  <div className="font-bold">{label}</div>
+                  <div className="font-bold">{value}</div>
+                </div>
+              ))}
             </div>
-            
-            <div className="text-right">
-              <p className="text-sm font-bold uppercase text-gray-500">Aggregate</p>
-              <p className="text-4xl font-black text-blue-900">{data.aggregate.aggregate}</p>
-              {data.aggregate.incomplete && (
-                <p className="text-xs text-red-500 uppercase font-bold mt-1">* Incomplete Results</p>
-              )}
+
+            {/* Results */}
+            <h3 className="text-sm font-bold mb-4">Results</h3>
+            <div className="pl-10 grid grid-cols-[1.5fr_70px_70px_1.2fr] gap-y-2.5 font-mono text-sm uppercase">
+              <span className="font-bold">Subject</span>
+              <span className="font-bold">Score</span>
+              <span className="font-bold">Grade</span>
+              <span className="font-bold">Remark</span>
+              {data.scores.map((s) => (
+                <div key={s.code} className="contents">
+                  <span>{s.name}</span>
+                  <span>{s.score == null ? "-" : s.score}</span>
+                  <span>{s.score == null ? "-" : s.grade}</span>
+                  <span>{s.score == null ? "MISSING" : getRemark(s.grade)}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Aggregate Summary */}
+            <div className="mt-10 pt-4 border-t border-gray-400 flex justify-between items-end">
+              <div>
+                <p className="text-2xl font-bold">
+                  {summary.totalScore ?? "-"}{" "}
+                  <span className="text-sm font-normal text-gray-400">/ 600</span>
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] font-bold uppercase text-gray-500">Aggregate</p>
+                <p className="text-3xl font-black text-blue-900">{summary.aggregate ?? "-"}</p>
+              </div>
             </div>
           </div>
 
+          {/* Footer */}
+          <div className="mt-auto pt-10 flex justify-between text-[10px] text-gray-600">
+            <span>{generatedAt}</span>
+            <span>{data.student.index_number}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -200,5 +214,35 @@ function getRemark(grade: number | string | null) {
     case 8: return "LOWER"
     case 9: return "LOWEST"
     default: return ""
+  }
+}
+
+const CORE_PATTERNS = [/english/i, /math/i, /science/i, /social/i]
+
+type ScoreRow = { name: string; score: number | null; grade: number | string | null }
+
+/**
+ * Total score & aggregate = English + Maths + Science + Social Studies
+ * + the best two of the remaining subjects (lowest grade; ties broken by higher score).
+ * Returns nulls if a core subject is missing or fewer than two other subjects have results.
+ */
+function computeSummary(scores: ScoreRow[]) {
+  const valid = scores.filter((s) => s.score != null && s.grade != null)
+
+  const core = CORE_PATTERNS.map((re) => valid.find((s) => re.test(s.name)))
+  if (core.some((c) => !c)) return { totalScore: null, aggregate: null }
+
+  const coreSet = new Set(core)
+  const others = valid
+    .filter((s) => !coreSet.has(s))
+    .sort((a, b) => Number(a.grade) - Number(b.grade) || Number(b.score) - Number(a.score))
+    .slice(0, 2)
+
+  if (others.length < 2) return { totalScore: null, aggregate: null }
+
+  const chosen = [...(core as ScoreRow[]), ...others]
+  return {
+    totalScore: chosen.reduce((sum, s) => sum + Number(s.score), 0),
+    aggregate: chosen.reduce((sum, s) => sum + Number(s.grade), 0),
   }
 }

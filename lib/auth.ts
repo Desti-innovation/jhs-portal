@@ -13,6 +13,7 @@ export type SessionUser = {
   email: string
   role: Role
   avatar_url?: string | null
+  lastActivity?: number // 👈 Added
 }
 
 const COOKIE_NAME = "jhs_session"
@@ -43,6 +44,7 @@ export async function signSession(user: SessionUser) {
     email: user.email,
     role: user.role,
     avatar_url: user.avatar_url ?? null,
+    lastActivity: Date.now(), // 👈 Added
   })
     .setProtectedHeader({ alg: JWT_ALG })
     .setIssuedAt()
@@ -62,6 +64,7 @@ export async function verifySession(token: string): Promise<SessionUser | null> 
       email: String(payload.email),
       role: payload.role as Role,
       avatar_url: (payload.avatar_url as string | null) ?? null,
+      lastActivity: Number(payload.lastActivity) || 0, // 👈 Added
     }
   } catch {
     return null
@@ -142,5 +145,6 @@ export async function loginWithCredentials(
     email: row.email,
     role: row.role,
     avatar_url: row.avatar_url,
+    lastActivity: Date.now(),
   }
 }
