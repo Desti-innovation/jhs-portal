@@ -3,9 +3,9 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { NotificationBell } from "@/components/notification-bell"
 import { ModeToggle } from "@/components/mode-toggel"
 import { NavUser } from "@/components/nav-user"
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar" // Added SidebarTrigger
 import { getCurrentUser } from "@/lib/auth"
-import { SessionTimeout } from "@/components/session-timeout" // 👈 Added
+import { SessionTimeout } from "@/components/session-timeout"
 
 export const instant = false
 
@@ -19,13 +19,24 @@ export default async function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <SessionTimeout /> {/* 👈 Added */}
+      <SessionTimeout />
       <AppSidebar user={user} />
       <SidebarInset>
-        <header className="flex h-14 items-center justify-end gap-2 border-b px-4">
-          <NotificationBell />
-          <ModeToggle />
-          <NavUser user={user} variant="header" />
+        {/* Changed to justify-between to push the trigger left and icons right */}
+        <header className="flex h-14 items-center justify-between border-b px-4">
+          
+          {/* Left side: Hamburger Menu for mobile */}
+          <div className="flex items-center gap-2">
+            <SidebarTrigger />
+          </div>
+
+          {/* Right side: Notifications, Theme, User Profile */}
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <ModeToggle />
+            <NavUser user={user} variant="header" />
+          </div>
+          
         </header>
         <div className="flex-1">{children}</div>
       </SidebarInset>
