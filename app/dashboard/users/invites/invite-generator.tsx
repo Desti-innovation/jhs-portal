@@ -7,6 +7,9 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Loader2, LinkIcon, Check } from "lucide-react"
 
+// 👇 Force the production domain
+const PRODUCTION_URL = "https://destora.cignalpulse.com"
+
 export function InviteGenerator() {
   const [role, setRole] = useState("teacher")
   const [loading, setLoading] = useState(false)
@@ -18,8 +21,8 @@ export function InviteGenerator() {
     setCopied(false)
     const res = await generateInviteAction(role)
     if (res.success && res.token) {
-      // Construct full URL using the current window origin
-      setGeneratedLink(`${window.location.origin}/invite/${res.token}`)
+      // 👇 Use the production URL instead of window.location.origin
+      setGeneratedLink(`${PRODUCTION_URL}/invite/${res.token}`)
     } else {
       alert(res.error)
     }
