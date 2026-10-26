@@ -35,13 +35,19 @@ export const NAV_BY_ROLE: Record<Role, NavItem[]> = {
     { title: "Grading Preview", url: "/dashboard/grading-preview", icon: <FlaskConicalIcon /> },
     { title: "Staff Invites", url: "/dashboard/users/invites", icon: <LinkIcon /> },
     { title: "Settings",        url: "/dashboard/settings",        icon: <Settings2Icon /> },
-      { title: "Broad Sheet",     url: "/dashboard/broad-sheet",     icon: <TableIcon /> }, 
+      { title: "Broad Sheet",     url: "/dashboard/broad-sheet",     icon: <TableIcon /> },
+          { title: "Analytics",       url: "/dashboard/analytics",     icon: <ChartBarIcon /> },
+ 
   ],
   teacher: [
     { title: "Dashboard",    url: "/dashboard",             icon: <LayoutDashboardIcon /> },
     { title: "Enter Scores", url: "/dashboard/scores",      icon: <ClipboardEditIcon /> },
     { title: "My Subjects",  url: "/dashboard/my-subjects", icon: <BookOpenIcon /> },
     { title: "Settings",     url: "/dashboard/settings",    icon: <Settings2Icon /> },
+    { title: "Broad Sheet",     url: "/dashboard/broad-sheet",     icon: <TableIcon /> }, 
+        { title: "Analytics",       url: "/dashboard/analytics",     icon: <ChartBarIcon /> },
+
+
   ],
   parent: [
     { title: "Dashboard",          url: "/dashboard",          icon: <LayoutDashboardIcon /> },
@@ -66,6 +72,7 @@ export const NAV_BY_ROLE: Record<Role, NavItem[]> = {
     { title: "Results (Slips)", url: "/dashboard/results",       icon: <ChartBarIcon /> },
     { title: "Analytics",       url: "/dashboard/analytics",     icon: <ChartBarIcon /> },
     { title: "Settings",        url: "/dashboard/settings",      icon: <Settings2Icon /> },
+          { title: "Broad Sheet",     url: "/dashboard/broad-sheet",     icon: <TableIcon /> }, 
   ],
 }
 
