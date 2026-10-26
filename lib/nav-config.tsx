@@ -35,6 +35,7 @@ export const NAV_BY_ROLE: Record<Role, NavItem[]> = {
     { title: "Grading Preview", url: "/dashboard/grading-preview", icon: <FlaskConicalIcon /> },
     { title: "Staff Invites", url: "/dashboard/users/invites", icon: <LinkIcon /> },
     { title: "Settings",        url: "/dashboard/settings",        icon: <Settings2Icon /> },
+      { title: "Broad Sheet",     url: "/dashboard/broad-sheet",     icon: <TableIcon /> }, 
   ],
   teacher: [
     { title: "Dashboard",    url: "/dashboard",             icon: <LayoutDashboardIcon /> },

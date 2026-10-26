@@ -46,5 +46,5 @@ export async function parentLoginAction(
   const token = await signSession(sessionUser)
   await setSessionCookie(token)
 
-  redirect("/dashboard/results")
+  redirect("/dashboard")
 }
