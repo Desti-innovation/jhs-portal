@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { TrophyIcon, TrendingUpIcon, CheckCircleIcon, XCircleIcon } from "lucide-react"
 import { SchoolAnalyticsCharts } from "./analytics-charts"
+import { computeAggregate } from "@/lib/grading" // 👈 Import the exact logic
 
 export const instant = false
 
@@ -78,20 +79,51 @@ export default async function AnalyticsPage({
     fill: COLORS[Number(g.grade) - 1] || "hsl(var(--muted))"
   }))
 
-  // 4. Top 10 Students
-  const topStudentsRes = await sql`
+  // 4. Top 10 Students (Using JS logic for aggregate)
+  // First, fetch raw scores for all students in this mock
+  const allScoresRes = await sql`
     SELECT 
+      s.id as student_id,
       s.first_name || ' ' || s.last_name as name,
       s.index_number,
-      SUM(sc.grade::int) as aggregate
+      sub.code as subject_code,
+      sc.score
     FROM students s
     JOIN scores sc ON sc.student_id = s.id
+    JOIN subjects sub ON sub.id = sc.subject_id
     WHERE sc.mock_id = ${selectedMock.id}
-    GROUP BY s.id, s.first_name, s.last_name, s.index_number
-    ORDER BY aggregate ASC
-    LIMIT 10
   `
-  const topStudents = topStudentsRes as { name: string, index_number: string, aggregate: string }[]
+  const allScores = allScoresRes as { student_id: string, name: string, index_number: string, subject_code: string, score: string }[]
+
+  // Group scores by student
+  const studentsMap = new Map<string, { name: string, index_number: string, scores: { subject_code: string, score: number | null }[] }>()
+  
+  allScores.forEach(row => {
+    if (!studentsMap.has(row.student_id)) {
+      studentsMap.set(row.student_id, { 
+        name: row.name, 
+        index_number: row.index_number, 
+        scores: [] 
+      })
+    }
+    studentsMap.get(row.student_id)!.scores.push({
+      subject_code: row.subject_code,
+      score: Number(row.score)
+    })
+  })
+
+  // Calculate aggregate using the EXACT same function as the slip
+  const topStudents = Array.from(studentsMap.values())
+    .map(st => {
+      const aggData = computeAggregate(st.scores)
+      return {
+        name: st.name,
+        index_number: st.index_number,
+        aggregate: aggData.aggregate
+      }
+    })
+    .sort((a, b) => a.aggregate - b.aggregate) // Sort ascending (lower is better)
+    .slice(0, 10)
 
   return (
     <div className="p-6 max-w-6xl space-y-8">
@@ -164,7 +196,7 @@ export default async function AnalyticsPage({
 
       {/* Top Students Leaderboard */}
       <div>
-        <h2 className="text-xl font-semibold tracking-tight mb-4">Top 10 Students</h2>
+        <h2 className="text-xl font-semibold tracking-tight mb-4">Top 10 Students (Best 6 Aggregate)</h2>
         <div className="rounded-md border overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-muted/50 border-b text-left">

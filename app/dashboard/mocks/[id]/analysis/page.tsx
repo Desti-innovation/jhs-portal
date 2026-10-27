@@ -6,6 +6,7 @@ import { sql } from "@/lib/db"
 import { Button } from "@/components/ui/button"
 import { ArrowLeftIcon, TrophyIcon } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { computeAggregate } from "@/lib/grading" // 👈 Import the exact logic
 
 export const instant = false
 
@@ -14,27 +15,57 @@ export default async function MockAnalysisPage({
 }: {
   params: Promise<{ id: string }>
 }) {
-  await requireRole("hod", "admin")
+  await requireRole("hod", "admin", "headmaster")
   const { id } = await params
 
   const mock = await getMock(id)
   if (!mock) notFound()
 
-  // 1. Top 5 Students (Aggregate)
-  const topStudents = (await sql`
+  // 1. Fetch ALL scores for this mock to calculate aggregate in JS
+  const rawScores = (await sql`
     SELECT 
+      s.id as student_id,
       s.first_name || ' ' || s.last_name as name,
       s.index_number,
-      SUM(sc.grade::int) as aggregate
+      sub.code as subject_code,
+      sc.score
     FROM students s
     JOIN scores sc ON sc.student_id = s.id
+    JOIN subjects sub ON sub.id = sc.subject_id
     WHERE sc.mock_id = ${id}
-    GROUP BY s.id, s.first_name, s.last_name, s.index_number
-    ORDER BY aggregate ASC
-    LIMIT 5
-  `) as { name: string; index_number: string; aggregate: string }[]
+  `) as { student_id: string; name: string; index_number: string; subject_code: string; score: string }[]
 
-  // 2. Subject Averages & Pass Rates
+  // Group scores by student
+  const studentMap = new Map<string, { name: string; index_number: string; scores: { subject_code: string; score: number }[] }>()
+  
+  rawScores.forEach(row => {
+    if (!studentMap.has(row.student_id)) {
+      studentMap.set(row.student_id, {
+        name: row.name,
+        index_number: row.index_number,
+        scores: []
+      })
+    }
+    studentMap.get(row.student_id)!.scores.push({
+      subject_code: row.subject_code,
+      score: Number(row.score)
+    })
+  })
+
+  // Calculate aggregate for each student and sort
+  const topStudents = Array.from(studentMap.values())
+    .map(st => {
+      const aggData = computeAggregate(st.scores)
+      return {
+        name: st.name,
+        index_number: st.index_number,
+        aggregate: aggData.aggregate
+      }
+    })
+    .sort((a, b) => a.aggregate - b.aggregate) // Lower aggregate is better
+    .slice(0, 5)
+
+  // 2. Subject Averages & Pass Rates (This part stays the same)
   const subjectStats = (await sql`
     SELECT 
       sub.name,
